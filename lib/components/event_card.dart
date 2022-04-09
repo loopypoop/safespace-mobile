@@ -22,12 +22,10 @@ class _EventCardState extends State<EventCard> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    print("initState");
   }
 
   @override
   Widget build(BuildContext context) {
-    print("build");
 
     return Card(
       color: Colors.orange,

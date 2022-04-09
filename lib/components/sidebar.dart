@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_auth/provider/storage/storage_provider.dart';
+import 'package:flutter_auth/screens/pages/profile.dart';
 
 import '../screens/pages/home_page.dart';
 
@@ -39,7 +40,12 @@ class SideBar extends StatelessWidget {
             ListTile(
               leading: const Icon(Icons.person),
               title: const Text('Profile'),
-              onTap: () {},
+              onTap: () {
+                // Navigator.pop(context);
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const ProfilePage())
+                );
+              }
             ),
             ListTile(
               leading: const Icon(Icons.settings),
