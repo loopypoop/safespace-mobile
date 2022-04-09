@@ -14,8 +14,14 @@ import '../storage/storage_provider.dart';
 class UserProvider extends ChangeNotifier {
   final requestBaseUrl = AppUrl.baseUrl;
 
-  Future<UserDetail?> getUserById({required String userId}) async {
+  bool _isLoading = false;
+  String _resMessage = '';
 
+  bool get isLoading => _isLoading;
+
+  String get resMessage => _resMessage;
+
+  Future<UserDetail?> getUserById({required String userId}) async {
     return StorageProvider().getToken().then((token) async {
       if (token == '') {
         PageNavigator().nextPageOnly(page: const LoginPage());
@@ -32,12 +38,9 @@ class UserProvider extends ChangeNotifier {
         return responseJson;
       }
     });
-
-
   }
 
   Future<UserDetail?> getUser(String userId) async {
-
     return StorageProvider().getToken().then((token) async {
       if (token == '') {
         PageNavigator().nextPageOnly(page: const LoginPage());
@@ -48,8 +51,7 @@ class UserProvider extends ChangeNotifier {
             headers: <String, String>{
               'Content-Type': 'application/json; charset=UTF-8',
               'Authorization': 'Bearer $token'
-            }
-        );
+            });
 
         if (response.statusCode == 200 || response.statusCode == 201) {
           // If the server did return a 201 CREATED response,
@@ -70,31 +72,91 @@ class UserProvider extends ChangeNotifier {
     });
   }
 
-  // Future<UserDetail?> getUserById({required String userId}) async {
-  //   String url = "$requestBaseUrl/business/user-detail/byUserId/" + userId;
-  //
-  //   StorageProvider().getToken().then((token) async {
-  //     if (token == '') {
-  //       PageNavigator().nextPageOnly(page: const LoginPage());
-  //     } else {
-  //       http.Response req = await http.get(
-  //           Uri.parse(url),
-  //           headers: <String, String>{
-  //             'Content-Type': 'application/json; charset=UTF-8',
-  //           }
-  //       );
-  //
-  //
-  //       print(req.statusCode);
-  //       if(req.statusCode == 200 || req.statusCode == 201) {
-  //         UserDetail response = json.decode(req.body);
-  //         // print(response);
-  //         return response;
-  //       } else {
-  //         return null;
-  //       }
-  //     }
-  //   });
-  //
-  // }
+  Future<String> updateUser(Object user) async {
+    final jsonUser = json.encode(user);
+    print(jsonUser);
+    return StorageProvider().getToken().then((token) async {
+      if (token == '') {
+        PageNavigator().nextPageOnly(page: const LoginPage());
+        return "";
+      } else {
+        try {
+          final response = await http.put(
+              Uri.parse("$requestBaseUrl/business/user-detail/createUpdate"),
+              body: jsonUser,
+              headers: <String, String>{
+                'Content-Type': 'application/json; charset=UTF-8',
+                'Authorization': 'Bearer $token'
+              });
+
+          print(response.statusCode);
+          if (response.statusCode == 200 || response.statusCode == 201) {
+            // If the server did return a 201 CREATED response,
+            // then parse the JSON.
+            UserDetail user = UserDetail.fromJson(jsonDecode(response.body));
+            print(user.firstName);
+            return "Personal information changed.";
+
+          } else if (response.statusCode == 401) {
+            PageNavigator().nextPageOnly(page: const LoginPage());
+          } else {
+            return "Please try again later.";
+          }
+        } on SocketException catch (_) {
+          return "Internet connection is not available.";
+
+          _resMessage = "Internet connection is not available.";
+          notifyListeners();
+        } catch (e) {
+          return "Please try again.";
+
+          _resMessage = "Please try again.";
+          notifyListeners();
+        }
+      }
+      return "";
+    });
+  }
+
+  Future<String> changePassword(Object changeRequest) async {
+    final jsonBody = json.encode(changeRequest);
+    print(jsonBody);
+    return StorageProvider().getToken().then((token) async {
+      if (token == '') {
+        PageNavigator().nextPageOnly(page: const LoginPage());
+        return "";
+      } else {
+        try {
+          final response = await http.post(
+              Uri.parse("$requestBaseUrl/change-password"),
+              body: jsonBody,
+              headers: <String, String>{
+                'Content-Type': 'application/json; charset=UTF-8',
+                'Authorization': 'Bearer $token'
+              });
+
+          print(response.statusCode);
+          if (response.statusCode == 200 || response.statusCode == 201) {
+            return response.body;
+
+          } else if (response.statusCode == 401) {
+            PageNavigator().nextPageOnly(page: const LoginPage());
+          } else {
+            return "Please try again later.";
+          }
+        } on SocketException catch (_) {
+          return "Internet connection is not available.";
+
+        } catch (e) {
+          return "Please try again.";
+        }
+      }
+      return "";
+    });
+  }
+  void clear() {
+    _resMessage = "";
+    // _isLoading = false;
+    notifyListeners();
+  }
 }

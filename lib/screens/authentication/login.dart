@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_auth/styles/colors.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_auth/provider/auth_provider/auth_provider.dart';
 import 'package:flutter_auth/shared/button.dart';
@@ -26,7 +27,8 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login'), centerTitle: true),
+      appBar: AppBar(title: const Text('Login'), centerTitle: true,
+      backgroundColor: primaryColor),
       body: CustomScrollView(
         slivers: [
           SliverToBoxAdapter(
@@ -54,7 +56,7 @@ class _LoginPageState extends State<LoginPage> {
                         }
                       });
                       return customButton(
-                          text: 'Login',
+                          text: 'Go!',
                           tap: () {
                             if (_username.text.isEmpty ||
                                 _password.text.isEmpty) {

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_auth/utils/snack_message.dart';
 import 'package:intl/intl.dart';
 import 'package:flutter_auth/components/sidebar.dart';
 import 'package:flutter_auth/model/UserDetail.dart';
@@ -6,7 +7,6 @@ import 'package:flutter_auth/provider/storage/storage_provider.dart';
 import 'package:flutter_auth/provider/user_provider/user_provider.dart';
 
 import 'package:flutter_auth/styles/colors.dart';
-
 
 class ProfilePage extends StatefulWidget {
   const ProfilePage({Key? key}) : super(key: key);
@@ -16,24 +16,46 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
   final TextEditingController _firstname = TextEditingController();
   final TextEditingController _lastname = TextEditingController();
   final TextEditingController _email = TextEditingController();
   final TextEditingController _phoneNumber = TextEditingController();
   final TextEditingController _dob = TextEditingController();
+
+  final TextEditingController _currentPassword = TextEditingController();
+  final TextEditingController _newPassword = TextEditingController();
+  final TextEditingController _confirmPassword = TextEditingController();
+
   late DateTime _initDate;
-  bool showPassword = false;
   bool changed = false;
+
+  final _formKey = GlobalKey<FormState>();
+  bool curPasswordVisible = false;
+  bool newPasswordVisible = false;
+  bool confirmPasswordVisible = false;
+  UserDetail user = UserDetail(
+      id: 0,
+      firstName: 'firstName',
+      lastName: 'lastName',
+      position: 'position',
+      riskStatus: 'riskStatus',
+      covidStatus: 'covidStatus',
+      phoneNumber: 'phoneNumber',
+      dateOfBirth: 1234,
+      email: '',
+      userId: 0);
 
   @override
   void initState() {
-    UserDetail user;
     StorageProvider().getUserId().then((userId) {
       if (userId != null) {
         UserProvider().getUser(userId).then((value) {
           if (value == null) {
             StorageProvider().logOut(context);
           } else {
+            print(value.id);
             user = value;
             DateTime dob =
                 DateTime.fromMillisecondsSinceEpoch(user.dateOfBirth);
@@ -58,6 +80,7 @@ class _ProfilePageState extends State<ProfilePage> {
       home: DefaultTabController(
         length: 2,
         child: Scaffold(
+          key: _scaffoldKey,
           drawer: const SideBar(),
           appBar: AppBar(
             bottom: const TabBar(
@@ -133,18 +156,15 @@ class _ProfilePageState extends State<ProfilePage> {
                       SizedBox(
                         height: 35,
                       ),
-                      buildTextField("Full Name", "Dor Alex", _firstname, false),
-                      buildTextField("Full Name", "Dor Alex", _lastname, false),
-                      buildTextField("E-mail", "alexd@gmail.com", _email, false),
-                      buildTextField("Phone number", "********", _phoneNumber, true),
+                      buildTextField("First Name", "", _firstname, false),
+                      buildTextField("Last Name", "", _lastname, false),
+                      buildTextField("E-mail", "", _email, false),
+                      buildTextField("Phone number", "", _phoneNumber, true),
 
                       // buildTextField("Location", "TLV, Israel", false, _dob),
                       Padding(
                         padding: EdgeInsets.only(bottom: 35.0),
                         child: TextField(
-                          onChanged: (text) {
-                            changed = true;
-                          },
                           showCursor: true,
                           readOnly: true,
                           decoration: const InputDecoration(
@@ -152,7 +172,8 @@ class _ProfilePageState extends State<ProfilePage> {
                               // icon: Icon(Icons.calendar_today),
                               contentPadding: EdgeInsets.only(bottom: 3),
                               labelText: 'Date of birth',
-                              floatingLabelBehavior: FloatingLabelBehavior.always,
+                              floatingLabelBehavior:
+                                  FloatingLabelBehavior.always,
                               // hintText: placeholder,
                               hintStyle: TextStyle(
                                 fontSize: 16,
@@ -164,16 +185,18 @@ class _ProfilePageState extends State<ProfilePage> {
                                 context: context,
                                 initialDate: _initDate,
                                 firstDate: DateTime(1930),
-                                lastDate: DateTime(2022)
-                            );
+                                lastDate: DateTime(2022));
 
                             if (pickedDate != null) {
                               _initDate = pickedDate;
-                              String formattedDate = DateFormat('MMMM dd, yyyy').format(pickedDate);
+
+                              String formattedDate = DateFormat('MMMM dd, yyyy')
+                                  .format(pickedDate);
 
                               // _dob.text = pickedDate.toString();
                               setState(() {
                                 _dob.text = formattedDate;
+                                changed = true;
                               });
                             } else {
                               print("Date is not selected");
@@ -190,16 +213,252 @@ class _ProfilePageState extends State<ProfilePage> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           RaisedButton(
-
                             onPressed: () {
-                              print(_initDate);
+                              final body = {
+                                "id": user.id,
+                                "firstName": _firstname.text,
+                                "email": _email.text,
+                                "lastName": _lastname.text,
+                                "position": user.position,
+                                "riskStatus": user.riskStatus,
+                                "covidStatus": user.covidStatus,
+                                "phoneNumber": _phoneNumber.text,
+                                "dateOfBirth": _initDate.millisecondsSinceEpoch,
+                                "userId": user.userId,
+                                "departmentId": user.departmentId
+                              };
+
+                              UserProvider().updateUser(body).then((value) {
+                                _scaffoldKey.currentState
+                                    ?.showSnackBar(SnackBar(
+                                  backgroundColor:
+                                      value == 'Personal information changed.'
+                                          ? Colors.green
+                                          : Colors.orange[400],
+                                  duration: const Duration(seconds: 3),
+                                  content: Text(value),
+                                  action: SnackBarAction(
+                                    onPressed: () {
+                                      // Some code to undo the change.
+                                    },
+                                    label: '',
+                                  ),
+                                ));
+                              });
                             },
-                            color: primaryColor,
+                            color: changed ? primaryColor : Colors.grey,
                             padding: EdgeInsets.symmetric(horizontal: 50),
                             elevation: 2,
                             shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20)),
-                            child: Text(
+                            child: const Text(
+                              "SAVE",
+                              style: TextStyle(
+                                  fontSize: 14,
+                                  letterSpacing: 2.2,
+                                  color: Colors.white),
+                            ),
+                          ),
+                        ],
+                      )
+                    ],
+                  ),
+                ),
+              ),
+              Container(
+                padding: EdgeInsets.only(left: 16, top: 25, right: 16),
+                child: GestureDetector(
+                  onTap: () {
+                    FocusScope.of(context).unfocus();
+                  },
+                  child: ListView(
+                    children: [
+                      SizedBox(
+                        height: 15,
+                      ),
+                      SizedBox(
+                        height: 35,
+                      ),
+                      Form(
+                          key: _formKey,
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 35.0),
+                                child: TextFormField(
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return "Field can't be empty.";
+                                    }
+                                    // if (value.contains(RegExp(r'^\S*$/'))) {
+                                    //   return "Entered password is not valid";
+                                    // }
+                                    return null;
+                                  },
+                                  onChanged: (text) {
+                                    changed = true;
+                                  },
+                                  obscureText: !curPasswordVisible,
+                                  enableSuggestions: false,
+                                  autocorrect: false,
+                                  decoration: InputDecoration(
+                                      contentPadding:
+                                          EdgeInsets.only(bottom: 15),
+                                      labelText: 'Current password',
+                                      floatingLabelBehavior:
+                                          FloatingLabelBehavior.always,
+                                      suffixIcon: IconButton(
+                                        icon: curPasswordVisible
+                                            ? Icon(Icons.visibility)
+                                            : Icon(Icons.visibility_off),
+                                        onPressed: () {
+                                          setState(() {
+                                            curPasswordVisible =
+                                                !curPasswordVisible;
+                                          });
+                                        },
+                                      ),
+                                      // hintText: placeholder,
+                                      hintStyle: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      )),
+                                  controller: _currentPassword,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 35.0),
+                                child: TextFormField(
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return "Field can't be empty.";
+                                    }
+                                    // if (value.contains(RegExp(r'^\S*$/'))) {
+                                    //   return "Entered password is not valid";
+                                    // }
+                                    return null;
+                                  },
+                                  onChanged: (text) {
+                                    changed = true;
+                                  },
+                                  obscureText: !newPasswordVisible,
+                                  enableSuggestions: false,
+                                  autocorrect: false,
+                                  decoration: InputDecoration(
+                                      contentPadding:
+                                          EdgeInsets.only(bottom: 3),
+                                      labelText: 'New password',
+                                      floatingLabelBehavior:
+                                          FloatingLabelBehavior.always,
+                                      suffixIcon: IconButton(
+                                        icon: newPasswordVisible
+                                            ? Icon(Icons.visibility)
+                                            : Icon(Icons.visibility_off),
+                                        onPressed: () {
+                                          setState(() {
+                                            newPasswordVisible =
+                                                !newPasswordVisible;
+                                          });
+                                        },
+                                      ),
+                                      // hintText: placeholder,
+                                      hintStyle: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      )),
+                                  controller: _newPassword,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(bottom: 35.0),
+                                child: TextFormField(
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return "Field can't be empty.";
+                                    }
+                                    // if (value.contains(RegExp(r'^\S*$/'))) {
+                                    //   return "Entered password is not valid";
+                                    // }
+                                    return null;
+                                  },
+                                  onChanged: (text) {
+                                    changed = true;
+                                  },
+                                  obscureText: !confirmPasswordVisible,
+                                  enableSuggestions: false,
+                                  autocorrect: false,
+                                  decoration: InputDecoration(
+                                      contentPadding:
+                                          EdgeInsets.only(bottom: 3),
+                                      labelText: 'Confirm password',
+                                      floatingLabelBehavior:
+                                          FloatingLabelBehavior.always,
+                                      suffixIcon: IconButton(
+                                        icon: confirmPasswordVisible
+                                            ? Icon(Icons.visibility)
+                                            : Icon(Icons.visibility_off),
+                                        onPressed: () {
+                                          setState(() {
+                                            confirmPasswordVisible =
+                                                !confirmPasswordVisible;
+                                          });
+                                        },
+                                      ),
+                                      // hintText: placeholder,
+                                      hintStyle: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      )),
+                                  controller: _confirmPassword,
+                                ),
+                              )
+                            ],
+                          )),
+                      SizedBox(
+                        height: 15,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          RaisedButton(
+                            onPressed: () {
+                              if (_formKey.currentState!.validate()) {
+                                var changeRequest = {
+                                  "userId": user.userId,
+                                  "currentPassword": _currentPassword.text,
+                                  "newPassword": _newPassword.text,
+                                  "confirmationPassword": _confirmPassword.text
+                                };
+                                UserProvider()
+                                    .changePassword(changeRequest)
+                                    .then((value) {
+                                  _scaffoldKey.currentState
+                                      ?.showSnackBar(SnackBar(
+                                    backgroundColor: value ==
+                                            'Password changed successfully.'
+                                        ? Colors.green
+                                        : Colors.red,
+                                    duration: const Duration(seconds: 3),
+                                    content: Text(value),
+                                    action: SnackBarAction(
+                                      onPressed: () {
+                                        // Some code to undo the change.
+                                      },
+                                      label: '',
+                                    ),
+                                  ));
+                                });
+                              }
+                            },
+                            color: changed ? primaryColor : Colors.grey,
+                            padding: EdgeInsets.symmetric(horizontal: 50),
+                            elevation: 2,
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20)),
+                            child: const Text(
                               "SAVE",
                               style: TextStyle(
                                   fontSize: 14,
@@ -213,16 +472,15 @@ class _ProfilePageState extends State<ProfilePage> {
                   ),
                 ),
               ),
-              Icon(Icons.directions_transit),
             ],
           ),
         ),
       ),
-
     );
   }
 
-  Widget buildTextField(String labelText, String placeholder, TextEditingController controller, isPhone) {
+  Widget buildTextField(String labelText, String placeholder,
+      TextEditingController controller, isPhone) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 35.0),
       child: TextField(
