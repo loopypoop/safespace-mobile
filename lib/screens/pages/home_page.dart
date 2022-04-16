@@ -1,58 +1,13 @@
-
 import 'package:flutter/material.dart';
+import 'package:flutter_auth/components/CardWidget.dart';
+import 'package:flutter_auth/components/StatsGrid.dart';
 import 'package:flutter_auth/components/sidebar.dart';
 import 'package:flutter_auth/styles/colors.dart';
 
-import '../../components/event_card.dart';
 import '../../model/Button.dart';
-import '../../model/Event.dart';
 import '../../shared/custom_icons.dart';
 
-
 class HomePage extends StatelessWidget {
-
-  List<Event> events = [
-    Event(
-        name: "Event 1",
-        location: "Location 1",
-        startDateTime: DateTime.now()),
-    Event(
-        name: "Event 2",
-        location: "Location 2",
-        startDateTime: DateTime.now()),
-    Event(
-        name: "Event 3",
-        location: "Location 3",
-        startDateTime: DateTime.now()),
-    Event(
-        name: "Event 4",
-        location: "Location 4",
-        startDateTime: DateTime.now()),
-    Event(
-        name: "Event 5",
-        location: "Location 5",
-        startDateTime: DateTime.now()),
-    Event(
-        name: "Event 6",
-        location: "Location 6",
-        startDateTime: DateTime.now()),
-    Event(
-        name: "Event 7",
-        location: "Location 7",
-        startDateTime: DateTime.now()),
-    Event(
-        name: "Event 8",
-        location: "Location 8",
-        startDateTime: DateTime.now()),
-    Event(
-        name: "Event 9",
-        location: "Location 9",
-        startDateTime: DateTime.now()),
-    Event(
-        name: "Event 10",
-        location: "Location 10",
-        startDateTime: DateTime.now()),
-  ];
   List<Button> icons = [
     Button(name: "Add", iconData: CustomIcons.add_box),
     Button(
@@ -72,35 +27,47 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      drawer: SideBar(),
-      appBar: AppBar(
-        title: const Text("SafeSpace"),
-        centerTitle: true,
-        backgroundColor: primaryColor,
-      ),
-      body: Container(
-          alignment: Alignment.topCenter,
-          padding: EdgeInsets.all(40),
-          child:
-          /* Wrap(spacing: 50, runSpacing: 40, children: [ */
-          ListView.builder(
-            // separatorBuilder: (context, index) => Divider(color: Colors.black, thickness: 2),
-            padding: const EdgeInsets.all(10),
-            physics: const BouncingScrollPhysics(),
-            itemCount: events.length,
+        drawer: SideBar(),
+        appBar: AppBar(
+          title: const Text("SafeSpace"),
+          centerTitle: true,
+          backgroundColor: primaryColor,
+        ),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            Container(
+              margin: EdgeInsets.only(top: 20, left: 20),
+              child: const Text(
+                "Welcome, John!",
+                style: TextStyle(
+                  color: Color(0xff363636),
+                  fontSize: 25,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'QuickSand',
+                ),
+              ),
+            ),
+            Container(
+              margin: EdgeInsets.only(top: 5, left: 20, bottom: 10),
+              child: const Text(
+                "Here is your Health Indicators for the day",
+                style: TextStyle(
+                  color: Colors.blueGrey,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'QuickSand',
+                ),
+              ),
+            ),
+            StatsGrid(),
+            CardWidget()
+          ],
+        ));
 
-            itemBuilder: (_, i) => EventCard(event: events[i]),
-          )
-        // ]),
-      ),
-      floatingActionButton: const FloatingActionButton(
-        onPressed: null,
-        child: Text("Add"),
-      ),
-    );
   }
 }
-
 
 // Container(
 // child: IconButton(

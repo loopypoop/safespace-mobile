@@ -87,6 +87,18 @@ flutter:
     - family: CustomIcons
       fonts:
         - asset: assets/fonts/CustomIcons.ttf
+    - family: Open Sans
+      fonts:
+        - asset: assets/fonts/OpenSans-Medium.ttf
+    - family: QuickSand
+      fonts:
+        - asset: assets/fonts/Quicksand-Regular.otf
+    - family: QuickSand Light
+      fonts:
+        - asset: assets/fonts/Quicksand-Light.otf
+    - family: QuickSand Bold
+      fonts:
+        - asset: assets/fonts/Quicksand-Bold.otf
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
