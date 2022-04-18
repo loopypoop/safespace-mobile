@@ -134,23 +134,18 @@ class _StatsGridState extends State<StatsGrid> {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text.rich(
-              TextSpan(
-                children: [
-                  TextSpan(
-                    text: title,
-                    style: const TextStyle(
-                        fontFamily: 'Open Sans',
-                        color: Colors.black87,
-                        fontSize: 17.0),
-                  ),
-                   WidgetSpan(
-                    child: Container(
-                      child: iconData,
-                    ),
-                  ),
-                ],
-              ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                      fontFamily: 'Open Sans',
+                      color: Colors.black87,
+                      fontSize: 17.0),
+                ),
+                iconData
+              ],
             ),
             RichText(
               text: TextSpan(
