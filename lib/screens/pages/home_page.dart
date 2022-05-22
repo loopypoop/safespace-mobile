@@ -33,9 +33,9 @@ class HomePage extends StatelessWidget {
           centerTitle: true,
           backgroundColor: primaryColor,
         ),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.start,
+        body: Wrap(
+          // crossAxisAlignment: CrossAxisAlignment.start,
+          // mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Container(
               margin: EdgeInsets.only(top: 20, left: 20),

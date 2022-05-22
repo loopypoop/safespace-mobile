@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_auth/provider/storage/storage_provider.dart';
+import 'package:flutter_auth/screens/pages/notification_list.dart';
 import 'package:flutter_auth/screens/pages/profile.dart';
 
 import '../screens/pages/home_page.dart';
@@ -48,9 +49,13 @@ class SideBar extends StatelessWidget {
               }
             ),
             ListTile(
-              leading: const Icon(Icons.settings),
-              title: const Text('Settings'),
-              onTap: () {},
+              leading: const Icon(Icons.notifications),
+              title: const Text('Notifications'),
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const NotificationList())
+                );
+              },
             ),
             ListTile(
               leading: const Icon(Icons.logout),

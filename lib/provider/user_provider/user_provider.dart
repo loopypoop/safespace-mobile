@@ -4,9 +4,12 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_auth/model/Indicator.dart';
+import 'package:flutter_auth/model/NotificationEntity.dart';
 import 'package:flutter_auth/model/UserDetail.dart';
 import 'package:flutter_auth/utils/routers.dart';
 import 'package:http/http.dart' as http;
+import 'package:lit_relative_date_time/controller/relative_date_format.dart';
+import 'package:lit_relative_date_time/lit_relative_date_time.dart';
 
 import '../../constants/app_url.dart';
 import '../../screens/authentication/login.dart';
@@ -41,6 +44,7 @@ class UserProvider extends ChangeNotifier {
     });
   }
 
+  //TODO indicator provider
   Future<Indicator?> getUserLastIndicator(String userId) async {
     return StorageProvider().getToken().then((token) async {
       if (token == '') {
@@ -58,6 +62,73 @@ class UserProvider extends ChangeNotifier {
           print(response.body);
           Indicator indicator = Indicator.fromJson(jsonDecode(response.body));
           return indicator;
+        } else if (response.statusCode == 401) {
+          print('Unauthorized!!!');
+
+          return null;
+        } else {
+          // If the server did not return a 201 CREATED response,
+          // then throw an exception.
+          throw Exception('Failed to get indicators.');
+        }
+      }
+    });
+  }
+
+  //TODO notification provider
+  Future<List<NotificationEntity>> getNotificationsUserId(String userId) async {
+    return StorageProvider().getToken().then((token) async {
+      if (token == '') {
+        PageNavigator().nextPageOnly(page: const LoginPage());
+        return [];
+      } else {
+        final response = await http.get(
+            Uri.parse("$requestBaseUrl/notify/get/all/$userId"),
+            headers: <String, String>{
+              'Content-Type': 'application/json; charset=UTF-8',
+              'Authorization': 'Bearer $token'
+            });
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          var responseJson = json.decode(response.body);
+          List<NotificationEntity> notifications = List<NotificationEntity>.from((responseJson['content'])
+              .map((data) => NotificationEntity.fromJson(data)));
+          // print(notifications[0].createdAt);
+          print(notifications[0].createdAt);
+          return notifications;
+        } else if (response.statusCode == 401) {
+          print('Unauthorized!!!');
+
+          return [];
+        } else {
+          // If the server did not return a 201 CREATED response,
+          // then throw an exception.
+          throw Exception('Failed to get notifications.');
+        }
+      }
+    });
+  }
+
+  //TODO notification provider
+  Future<NotificationEntity?> getNotificationById(int notificationId) async {
+    return StorageProvider().getToken().then((token) async {
+      if (token == '') {
+        PageNavigator().nextPageOnly(page: const LoginPage());
+        return null;
+      } else {
+        final response = await http.get(
+            Uri.parse("$requestBaseUrl/notify/get/$notificationId"),
+            headers: <String, String>{
+              'Content-Type': 'application/json; charset=UTF-8',
+              'Authorization': 'Bearer $token'
+            });
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          // If the server did return a 201 CREATED response,
+          // then parse the JSON.
+          print(response.body);
+          NotificationEntity notification = NotificationEntity.fromJson(jsonDecode(response.body));
+          return notification;
         } else if (response.statusCode == 401) {
           print('Unauthorized!!!');
 

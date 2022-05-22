@@ -17,11 +17,11 @@ class _StatsGridState extends State<StatsGrid> {
   Indicator indicator = Indicator(
       id: 0,
       userId: 0,
-      temperature: 0,
-      heartRate: 0,
-      upperBloodPressure: 0,
-      lowerBloodPressure: 0,
-      bloodOxygen: 0,
+      temperature: 37.2,
+      heartRate: 62,
+      upperBloodPressure: 96,
+      lowerBloodPressure: 88,
+      bloodOxygen: 99.55,
       checkTime: 1234,
       isLast: true);
 
