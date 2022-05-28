@@ -5,9 +5,19 @@ import 'package:flutter_auth/components/sidebar.dart';
 import 'package:flutter_auth/styles/colors.dart';
 
 import '../../model/Button.dart';
+import '../../model/Indicator.dart';
+import '../../provider/storage/storage_provider.dart';
+import '../../provider/user_provider/user_provider.dart';
 import '../../shared/custom_icons.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   List<Button> icons = [
     Button(name: "Add", iconData: CustomIcons.add_box),
     Button(
@@ -24,6 +34,36 @@ class HomePage extends StatelessWidget {
     ),
   ];
 
+  Indicator indicator = Indicator(
+      id: 0,
+      userId: 0,
+      temperature: 0,
+      heartRate: 0,
+      upperBloodPressure: 0,
+      lowerBloodPressure: 0,
+      bloodOxygen: 0,
+      checkTime: 0,
+      isLast: true);
+
+  @override
+  void initState() {
+    StorageProvider().getUserId().then((userId) {
+      UserProvider().getUserLastIndicator(userId).then((value) {
+        indicator = value;
+        build(context);
+      });
+    });
+
+    super.initState();
+  }
+
+  Future<Indicator>? fetchData() async {
+    var userId = StorageProvider().getUserId();
+    var lastIndicator = UserProvider().getUserLastIndicator(await userId);
+
+    return lastIndicator;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -33,86 +73,46 @@ class HomePage extends StatelessWidget {
           centerTitle: true,
           backgroundColor: primaryColor,
         ),
-        body: Wrap(
-          // crossAxisAlignment: CrossAxisAlignment.start,
-          // mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Container(
-              margin: EdgeInsets.only(top: 20, left: 20),
-              child: const Text(
-                "Welcome, John!",
-                style: TextStyle(
-                  color: Color(0xff363636),
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'QuickSand',
-                ),
-              ),
-            ),
-            Container(
-              margin: EdgeInsets.only(top: 5, left: 20, bottom: 10),
-              child: const Text(
-                "Here is your Health Indicators for the day",
-                style: TextStyle(
-                  color: Colors.blueGrey,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  fontFamily: 'QuickSand',
-                ),
-              ),
-            ),
-            StatsGrid(),
-            CardWidget()
-          ],
+        body: FutureBuilder<Indicator>(
+          future: fetchData(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return Wrap(
+                  children: [
+                    Container(
+                      margin: EdgeInsets.only(top: 20, left: 20),
+                      child: const Text(
+                        "Welcome, John!",
+                        style: TextStyle(
+                          color: Color(0xff363636),
+                          fontSize: 25,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'QuickSand',
+                        ),
+                      ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.only(top: 5, left: 20, bottom: 10),
+                      child: const Text(
+                        "Here is your Health Indicators for the day",
+                        style: TextStyle(
+                          color: Colors.blueGrey,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'QuickSand',
+                        ),
+                      ),
+                    ),
+                    StatsGrid(indicator: indicator),
+                    CardWidget(indicator: indicator)
+                  ],
+                );
+            } else if (snapshot.hasError) {
+              return Text('${snapshot.error}');
+            }
+            return const Center(child: CircularProgressIndicator());
+          },
         ));
-
   }
 }
 
-// Container(
-// child: IconButton(
-// icon: const Icon(
-// CustomIcons.archive,
-// ),
-// color: Colors.white,
-// iconSize: 100.0,
-// onPressed: () {
-// print("Button has been pressed");
-// },
-// ),
-// decoration: BoxDecoration(
-// color: Colors.black54,
-// // borderRadius: BorderRadius.circular(50),
-// shape: BoxShape.circle,
-// border: Border.all(
-// width: 5,
-// color: Colors.red,
-// // style: BorderStyle.solid
-// ),
-// boxShadow: const [
-// BoxShadow(color: Colors.black, spreadRadius: 1, blurRadius: 5)
-// ]),
-// )
-
-// RichText(
-// text: const TextSpan(
-// style: TextStyle(
-// fontSize: 30.0,
-// color: Colors.red,
-// fontFamily: "Fredoka",
-// fontWeight: FontWeight.bold),
-// children: <TextSpan>[
-// TextSpan(text: "Hello, "),
-// TextSpan(
-// style: TextStyle(color: Colors.black),
-// children: <TextSpan>[
-// TextSpan(text: "Brave "),
-// TextSpan(text: "New "),
-// TextSpan(
-// text: "World",
-// style:
-// TextStyle(decoration: TextDecoration.underline)),
-// ]),
-// TextSpan(text: "!"),
-// ]),
-// )

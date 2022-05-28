@@ -1,47 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_auth/model/Indicator.dart';
-import 'package:flutter_auth/model/UserDetail.dart';
-import 'package:flutter_auth/provider/storage/storage_provider.dart';
-import 'package:flutter_auth/provider/user_provider/user_provider.dart';
 
 class StatsGrid extends StatefulWidget {
-  const StatsGrid({Key? key}) : super(key: key);
+
+  final Indicator indicator;
+  StatsGrid({Key? key, required this.indicator}) : super(key: key);
 
   @override
   _StatsGridState createState() => _StatsGridState();
 }
 
 class _StatsGridState extends State<StatsGrid> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
-  Indicator indicator = Indicator(
-      id: 0,
-      userId: 0,
-      temperature: 37.2,
-      heartRate: 62,
-      upperBloodPressure: 96,
-      lowerBloodPressure: 88,
-      bloodOxygen: 99.55,
-      checkTime: 1234,
-      isLast: true);
 
-  @override
-  void initState() {
-    StorageProvider().getUserId().then((userId) {
-      if (userId != null) {
-        UserProvider().getUserLastIndicator(userId).then((value) {
-          if (value == null) {
-            StorageProvider().logOut(context);
-          } else {
-            print(value.id);
-            indicator = value;
-          }
-        });
-      }
-    });
+  // final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
-    super.initState();
-  }
+  // Indicator indicator = Indicator(
+  //     id: 0,
+  //     userId: 0,
+  //     temperature: 37.2,
+  //     heartRate: 62,
+  //     upperBloodPressure: 96,
+  //     lowerBloodPressure: 88,
+  //     bloodOxygen: 99.55,
+  //     checkTime: 1234,
+  //     isLast: true);
+
+  // @override
+  // void initState() {
+  //
+  //   fetchData().then((value) => {
+  //     indicator = value!
+  //   });
+  //
+  //   super.initState();
+  // }
+  //
+  // Future<Indicator?> fetchData() async {
+  //   var userId = StorageProvider().getUserId();
+  //   var lastIndicator = UserProvider().getUserLastIndicator(await userId);
+  //
+  //   print(lastIndicator);
+  //   return lastIndicator;
+  // }
+
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +56,7 @@ class _StatsGridState extends State<StatsGrid> {
               children: <Widget>[
                 _buildStatCard(
                   'Heart Rate',
-                  indicator.heartRate.toString(),
+                  widget.indicator.heartRate.toString(),
                   ' bpm',
                   Color(0xff50508f),
                   const Icon(
@@ -65,9 +67,9 @@ class _StatsGridState extends State<StatsGrid> {
                 ),
                 _buildStatCard(
                   'Blood Pressure',
-                  indicator.upperBloodPressure.toString() +
+                  widget.indicator.upperBloodPressure.toString() +
                       '/' +
-                      indicator.lowerBloodPressure.toString(),
+                      widget.indicator.lowerBloodPressure.toString(),
                   ' mmHg',
                   Color(0xff74b455),
                   const Icon(
@@ -84,7 +86,7 @@ class _StatsGridState extends State<StatsGrid> {
               children: <Widget>[
                 _buildStatCard(
                   'Temperature',
-                  indicator.temperature.toString(),
+                  widget.indicator.temperature.toString(),
                   ' °C',
                   Color(0xffb23841),
                   const Icon(
@@ -95,7 +97,7 @@ class _StatsGridState extends State<StatsGrid> {
                 ),
                 _buildStatCard(
                   'Blood Oxygen',
-                  indicator.bloodOxygen.toString(),
+                  widget.indicator.bloodOxygen.toString(),
                   ' %',
                   Color(0xffdcda7c),
                   const Icon(

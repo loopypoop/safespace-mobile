@@ -25,31 +25,42 @@ class UserProvider extends ChangeNotifier {
 
   String get resMessage => _resMessage;
 
-  Future<UserDetail?> getUserById({required String userId}) async {
+  Future<UserDetail> getUserById({required String userId}) async {
     return StorageProvider().getToken().then((token) async {
       if (token == '') {
         PageNavigator().nextPageOnly(page: const LoginPage());
-        return null;
+        throw Exception('Failed to create album.');
       } else {
         final response = await http.get(
-          Uri.parse("$requestBaseUrl/business/user-detail/byUserId/" + userId),
-          // Send authorization headers to the backend.
-          headers: {
-            HttpHeaders.authorizationHeader: 'Basic $token',
-          },
-        );
-        final responseJson = jsonDecode(response.body);
-        return responseJson;
+            Uri.parse("$requestBaseUrl/business/user-detail/byUserId/$userId"),
+            headers: <String, String>{
+              'Content-Type': 'application/json; charset=UTF-8',
+              'Authorization': 'Bearer $token'
+            });
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          // If the server did return a 201 CREATED response,
+          // then parse the JSON.
+          print(response.body);
+          UserDetail user = UserDetail.fromJson(jsonDecode(response.body));
+          return user;
+        } else if (response.statusCode == 401) {
+          print('Unauthorized!!!');
+
+          throw Exception('Failed to get user details.');
+        } else {
+          throw Exception('Failed to get user details.');
+        }
       }
     });
   }
 
   //TODO indicator provider
-  Future<Indicator?> getUserLastIndicator(String userId) async {
+  Future<Indicator> getUserLastIndicator(String userId) async {
     return StorageProvider().getToken().then((token) async {
       if (token == '') {
         PageNavigator().nextPageOnly(page: const LoginPage());
-        return null;
+        throw Exception('Token is unreached!');
       } else {
         final response = await http.get(
             Uri.parse("$requestBaseUrl/business/indicator/user/last/$userId"),
@@ -59,13 +70,11 @@ class UserProvider extends ChangeNotifier {
             });
 
         if (response.statusCode == 200 || response.statusCode == 201) {
-          print(response.body);
           Indicator indicator = Indicator.fromJson(jsonDecode(response.body));
           return indicator;
         } else if (response.statusCode == 401) {
-          print('Unauthorized!!!');
-
-          return null;
+          PageNavigator().nextPageOnly(page: const LoginPage());
+          throw Exception('Unauthorized.');
         } else {
           // If the server did not return a 201 CREATED response,
           // then throw an exception.
@@ -91,8 +100,9 @@ class UserProvider extends ChangeNotifier {
 
         if (response.statusCode == 200 || response.statusCode == 201) {
           var responseJson = json.decode(response.body);
-          List<NotificationEntity> notifications = List<NotificationEntity>.from((responseJson['content'])
-              .map((data) => NotificationEntity.fromJson(data)));
+          List<NotificationEntity> notifications =
+              List<NotificationEntity>.from((responseJson['content'])
+                  .map((data) => NotificationEntity.fromJson(data)));
           // print(notifications[0].createdAt);
           print(notifications[0].createdAt);
           return notifications;
@@ -127,7 +137,8 @@ class UserProvider extends ChangeNotifier {
           // If the server did return a 201 CREATED response,
           // then parse the JSON.
           print(response.body);
-          NotificationEntity notification = NotificationEntity.fromJson(jsonDecode(response.body));
+          NotificationEntity notification =
+              NotificationEntity.fromJson(jsonDecode(response.body));
           return notification;
         } else if (response.statusCode == 401) {
           print('Unauthorized!!!');
@@ -198,7 +209,6 @@ class UserProvider extends ChangeNotifier {
             UserDetail user = UserDetail.fromJson(jsonDecode(response.body));
             print(user.firstName);
             return "Personal information changed.";
-
           } else if (response.statusCode == 401) {
             PageNavigator().nextPageOnly(page: const LoginPage());
           } else {
@@ -240,7 +250,6 @@ class UserProvider extends ChangeNotifier {
           print(response.statusCode);
           if (response.statusCode == 200 || response.statusCode == 201) {
             return response.body;
-
           } else if (response.statusCode == 401) {
             PageNavigator().nextPageOnly(page: const LoginPage());
           } else {
@@ -248,7 +257,6 @@ class UserProvider extends ChangeNotifier {
           }
         } on SocketException catch (_) {
           return "Internet connection is not available.";
-
         } catch (e) {
           return "Please try again.";
         }
@@ -256,6 +264,7 @@ class UserProvider extends ChangeNotifier {
       return "";
     });
   }
+
   void clear() {
     _resMessage = "";
     // _isLoading = false;
