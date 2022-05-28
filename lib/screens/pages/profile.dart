@@ -55,7 +55,6 @@ class _ProfilePageState extends State<ProfilePage> {
           if (value == null) {
             StorageProvider().logOut(context);
           } else {
-            print(value.id);
             user = value;
             DateTime dob =
                 DateTime.fromMillisecondsSinceEpoch(user.dateOfBirth);

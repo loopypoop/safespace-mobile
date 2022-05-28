@@ -41,7 +41,6 @@ class UserProvider extends ChangeNotifier {
         if (response.statusCode == 200 || response.statusCode == 201) {
           // If the server did return a 201 CREATED response,
           // then parse the JSON.
-          print(response.body);
           UserDetail user = UserDetail.fromJson(jsonDecode(response.body));
           return user;
         } else if (response.statusCode == 401) {
@@ -104,7 +103,6 @@ class UserProvider extends ChangeNotifier {
               List<NotificationEntity>.from((responseJson['content'])
                   .map((data) => NotificationEntity.fromJson(data)));
           // print(notifications[0].createdAt);
-          print(notifications[0].createdAt);
           return notifications;
         } else if (response.statusCode == 401) {
           print('Unauthorized!!!');
@@ -136,7 +134,6 @@ class UserProvider extends ChangeNotifier {
         if (response.statusCode == 200 || response.statusCode == 201) {
           // If the server did return a 201 CREATED response,
           // then parse the JSON.
-          print(response.body);
           NotificationEntity notification =
               NotificationEntity.fromJson(jsonDecode(response.body));
           return notification;
@@ -169,7 +166,6 @@ class UserProvider extends ChangeNotifier {
         if (response.statusCode == 200 || response.statusCode == 201) {
           // If the server did return a 201 CREATED response,
           // then parse the JSON.
-          print(response.body);
           UserDetail user = UserDetail.fromJson(jsonDecode(response.body));
           return user;
         } else if (response.statusCode == 401) {
@@ -187,7 +183,6 @@ class UserProvider extends ChangeNotifier {
 
   Future<String> updateUser(Object user) async {
     final jsonUser = json.encode(user);
-    print(jsonUser);
     return StorageProvider().getToken().then((token) async {
       if (token == '') {
         PageNavigator().nextPageOnly(page: const LoginPage());
@@ -202,12 +197,10 @@ class UserProvider extends ChangeNotifier {
                 'Authorization': 'Bearer $token'
               });
 
-          print(response.statusCode);
           if (response.statusCode == 200 || response.statusCode == 201) {
             // If the server did return a 201 CREATED response,
             // then parse the JSON.
             UserDetail user = UserDetail.fromJson(jsonDecode(response.body));
-            print(user.firstName);
             return "Personal information changed.";
           } else if (response.statusCode == 401) {
             PageNavigator().nextPageOnly(page: const LoginPage());
@@ -232,7 +225,6 @@ class UserProvider extends ChangeNotifier {
 
   Future<String> changePassword(Object changeRequest) async {
     final jsonBody = json.encode(changeRequest);
-    print(jsonBody);
     return StorageProvider().getToken().then((token) async {
       if (token == '') {
         PageNavigator().nextPageOnly(page: const LoginPage());
@@ -247,7 +239,6 @@ class UserProvider extends ChangeNotifier {
                 'Authorization': 'Bearer $token'
               });
 
-          print(response.statusCode);
           if (response.statusCode == 200 || response.statusCode == 201) {
             return response.body;
           } else if (response.statusCode == 401) {
@@ -262,6 +253,34 @@ class UserProvider extends ChangeNotifier {
         }
       }
       return "";
+    });
+  }
+
+  Future<String> recheck(String userId) async {
+    return StorageProvider().getToken().then((token) async {
+      if (token == '') {
+        PageNavigator().nextPageOnly(page: const LoginPage());
+        throw Exception('Token is unreached!');
+      } else {
+        final response = await http.get(
+            Uri.parse("$requestBaseUrl/integ/indicator/emulator/recheck/$userId"),
+            headers: <String, String>{
+              'Content-Type': 'application/json; charset=UTF-8',
+              'Authorization': 'Bearer $token'
+            });
+
+        if (response.statusCode == 200 || response.statusCode == 201) {
+          // Indicator indicator = Indicator.fromJson(jsonDecode(response.body));
+          return "Indicators successfully rechecked!";
+        } else if (response.statusCode == 401) {
+          PageNavigator().nextPageOnly(page: const LoginPage());
+          throw Exception('Unauthorized.');
+        } else {
+          // If the server did not return a 201 CREATED response,
+          // then throw an exception.
+          return "Failed to recheck. Please try again later...";
+        }
+      }
     });
   }
 

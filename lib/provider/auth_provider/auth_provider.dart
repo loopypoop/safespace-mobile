@@ -40,7 +40,6 @@ class AuthenticationProvider extends ChangeNotifier {
       "username": username,
       "password": password
     };
-    print(body);
 
     try {
       http.Response req =
@@ -56,7 +55,6 @@ class AuthenticationProvider extends ChangeNotifier {
 
         _resMessage = res['message'];
 
-        print(res);
         _isLoading = false;
         notifyListeners();
       }
@@ -84,7 +82,6 @@ class AuthenticationProvider extends ChangeNotifier {
     String url = "$requestBaseUrl/login";
 
     final body = {"username": username, "password": password};
-    print(body);
 
     try {
       http.Response req = await http.post(
@@ -98,8 +95,6 @@ class AuthenticationProvider extends ChangeNotifier {
         final String token = req.body;
         Map<String, dynamic> payload = Jwt.parseJwt(token);
 
-        print('response: ' + token);
-        print('userId: ' + payload['id'].toString());
         _isLoading = false;
         _resMessage = "Login successful!";
         notifyListeners();
@@ -119,7 +114,6 @@ class AuthenticationProvider extends ChangeNotifier {
         _resMessage = res['message'];
         notifyListeners();
 
-        print(res);
       }
     } on SocketException catch (e) {
       _isLoading = false;
